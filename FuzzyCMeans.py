@@ -134,12 +134,3 @@ class FuzzyCMeans:
         labels = self.findLabels(matrix)
             
         return cluster_centers, labels
-            
-
-
-    
-        
-    
-    
-    
-        
