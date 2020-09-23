@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  3 00:26:52 2020
+Created on Wed May  6 05:16:27 2020
 
-@author: trung_phuc
+@author: huu_linh
 """
-import numpy as np
 
-class FuzzyCMeans:
+
+import numpy as np
+import math
+
+class FCM_Sigma:
     def __init__(self, m, data_frame, N, n_clusters, eps=1e-4, max_count=1e+5):
         self.m = m #tham so fuzzy
         self.max_count = max_count #so vong lap toi da
@@ -18,6 +21,8 @@ class FuzzyCMeans:
         
     def dist(self, A, B):
         return np.linalg.norm(A-B, keepdims = False)
+    def new_dist(self, Xi, Cj, sigmaJ):
+        return (self.dist(Xi, Cj)) / (np.sqrt(sigmaJ))
     
     def initializeMembershipMatrix(self):
         """
@@ -48,8 +53,11 @@ class FuzzyCMeans:
 
         """
         center_clusters = np.zeros((self.K, self.data_frame.shape[1]))
+        s = None; sigma_clusters = np.zeros(self.K)
+        
         for i in range(self.K):
             center = np.zeros(self.data_frame.shape[1])
+            sigma = 0
             s = 0
             for j in range(self.N):
                 t = (membership_mat[i][j] ** self.m)
@@ -57,10 +65,16 @@ class FuzzyCMeans:
                 tmp1 = t * self.data_frame[j, :]
                 center += tmp1
             center_clusters[i, :] = center / s
+            for j in range(self.N):
+                t2 = membership_mat[i][j] ** self.m
+                tmp2 = t2 * (self.dist(self.data_frame[j, :], center_clusters[i, :]) ** 2)
+                sigma += tmp2
+            sigma_clusters[i] = np.sqrt(sigma / s)
+            
             #print(center)
-        return center_clusters
+        return center_clusters, sigma_clusters
     
-    def updateMembershipMatrix(self, center_clusters):
+    def updateMembershipMatrix(self, center_clusters, sigma_clusters):
         """
         Parameters
         ----------
@@ -79,7 +93,7 @@ class FuzzyCMeans:
         inverse_matrix_distance = np.zeros((self.N, self.K))
         for i in range(self.N):
             for j in range(self.K):
-                matrix_distance[i, j] = self.dist(self.data_frame[i, :], center_clusters[j, :])
+                matrix_distance[i, j] = self.new_dist(self.data_frame[i, :], center_clusters[j, :], sigma_clusters[j])
         
         inverse_matrix_distance = 1.00 / matrix_distance
         
@@ -122,16 +136,17 @@ class FuzzyCMeans:
         for i in range(self.data_frame.shape[0]):
             for j in range(self.data_frame.shape[1]):
                 self.data_frame[i][j] = (self.data_frame[i][j] - b[j]) / (a[j] - b[j])
-    
+
     def FCM(self):
         self.normalizeData()
         matrix = self.initializeMembershipMatrix()
         tmp = matrix
         cluster_centers = np.zeros((self.K, self.data_frame.shape[1]))
+        cluster_sigmas = np.zeros(self.K)
         count = 0
         while True:
-            cluster_centers = self.updateCenters(matrix)
-            matrix = self.updateMembershipMatrix(cluster_centers)
+            cluster_centers, cluster_sigmas = self.updateCenters(matrix)
+            matrix = self.updateMembershipMatrix(cluster_centers, cluster_sigmas)
             terminate = (np.linalg.norm(matrix - tmp))
             tmp = matrix
             if ((terminate < self.eps) or (count >= self.max_count)):
@@ -143,11 +158,3 @@ class FuzzyCMeans:
             
         return cluster_centers, labels
             
-
-
-    
-        
-    
-    
-    
-        

@@ -11,9 +11,7 @@ class RandIndex:
         self.cluster_labels = cluster_labels
         
     def isSimilar(self, label1, label2):
-        n = min(len(label1), len(label2))
-        t = min(n, 5)
-        return label1[:t]==label2[:t]
+        return label1==label2
         
     def RI(self):
         i = 0; a = 0; b = 0; c = 0; d = 0

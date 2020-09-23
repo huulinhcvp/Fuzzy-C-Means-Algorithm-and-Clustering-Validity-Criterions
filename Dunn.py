@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-
 from scipy.spatial import distance
 import numpy as np
 import sys

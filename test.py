@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
-from sklearn import metrics
-from sklearn.cluster import KMeans
+#from sklearn import metrics
+#from sklearn.cluster import KMeans
 from ClusteringValidity import ClusteringValidity
 from FuzzyCMeans import FuzzyCMeans
 from ExternalClusteringValidity import RandIndex, AdjustedRandIndex, JaccardCoefficient
